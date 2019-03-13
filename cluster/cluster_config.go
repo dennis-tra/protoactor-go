@@ -26,11 +26,16 @@ func NewClusterConfig(name string, address string, clusterProvider ClusterProvid
 		InitialMemberStatusValue:    nil,
 		MemberStatusValueSerializer: &NilMemberStatusValueSerializer{},
 		MemberStrategyBuilder:       newDefaultMemberStrategy,
+		RemotingOption:              defaultRemotingOption,
 	}
 }
 
+var defaultRemotingOption = []remote.RemotingOption{
+	remote.WithSupervisorStrategy(&supervisorStrategy{}),
+}
+
 func (c *ClusterConfig) WithRemotingOption(remotingOption []remote.RemotingOption) *ClusterConfig {
-	c.RemotingOption = remotingOption
+	c.RemotingOption = append(defaultRemotingOption, remotingOption...)
 	return c
 }
 

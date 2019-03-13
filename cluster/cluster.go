@@ -126,3 +126,25 @@ func GetMemberPIDs(kind string) actor.PIDSet {
 func RemoveCache(name string) {
 	pidCache.removeCacheByName(name)
 }
+
+type supervisorStrategy struct{}
+
+func (strategy *supervisorStrategy) HandleFailure(supervisor actor.Supervisor, child *actor.PID, rs *actor.RestartStatistics, reason interface{}, message interface{}) {
+
+	if memberList == nil {
+		supervisor.StopChildren(child)
+		return
+	}
+
+	memberList.mutex.RLock()
+	defer memberList.mutex.RUnlock()
+
+	for _, value := range memberList.members {
+		if value.Address() == child.GetAddress() {
+			supervisor.RestartChildren(child)
+			return
+		}
+	}
+
+	supervisor.StopChildren(child)
+}

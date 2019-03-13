@@ -1,6 +1,9 @@
 package remote
 
-import "google.golang.org/grpc"
+import (
+	"github.com/AsynkronIT/protoactor-go/actor"
+	"google.golang.org/grpc"
+)
 
 // RemotingOption configures how the remote infrastructure is started
 type RemotingOption func(*remoteConfig)
@@ -13,6 +16,7 @@ func defaultRemoteConfig() *remoteConfig {
 		endpointManagerBatchSize: 1000,
 		endpointWriterQueueSize:  1000000,
 		endpointManagerQueueSize: 1000000,
+		supervisorStrategy:       actor.NewRestartingStrategy(),
 	}
 }
 
@@ -64,6 +68,12 @@ func WithAdvertisedAddress(address string) RemotingOption {
 	}
 }
 
+func WithSupervisorStrategy(supervisor actor.SupervisorStrategy) RemotingOption {
+	return func(config *remoteConfig) {
+		config.supervisorStrategy = supervisor
+	}
+}
+
 type remoteConfig struct {
 	advertisedAddress        string
 	serverOptions            []grpc.ServerOption
@@ -73,4 +83,5 @@ type remoteConfig struct {
 	endpointWriterQueueSize  int
 	endpointManagerBatchSize int
 	endpointManagerQueueSize int
+	supervisorStrategy       actor.SupervisorStrategy
 }

@@ -148,13 +148,10 @@ func (state *endpointSupervisor) Receive(ctx actor.Context) {
 	}
 }
 
-func (state *endpointSupervisor) HandleFailure(supervisor actor.Supervisor, child *actor.PID, rs *actor.RestartStatistics, reason interface{}, message interface{}) {
-	supervisor.RestartChildren(child)
-}
-
 func (state *endpointSupervisor) spawnEndpointWriter(address string, ctx actor.Context) *actor.PID {
 	props := actor.
 		PropsFromProducer(endpointWriterProducer(address, endpointManager.config)).
+		WithSupervisor(endpointManager.config.supervisorStrategy).
 		WithMailbox(endpointWriterMailboxProducer(endpointManager.config.endpointWriterBatchSize, endpointManager.config.endpointWriterQueueSize))
 	pid := ctx.Spawn(props)
 	return pid
