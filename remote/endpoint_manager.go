@@ -149,17 +149,7 @@ func (state *endpointSupervisor) Receive(ctx actor.Context) {
 }
 
 func (state *endpointSupervisor) HandleFailure(supervisor actor.Supervisor, child *actor.PID, rs *actor.RestartStatistics, reason interface{}, message interface{}) {
-	endpointManager.connections.Range(func(address, value interface{}) bool {
-		le := value.(*endpointLazy)
-		ep := le.valueFunc()
-
-		if ep.writer.Equal(child) || ep.watcher.Equal(child) {
-			supervisor.RestartChildren(child)
-			return false
-		}
-
-		return true
-	})
+	supervisor.RestartChildren(child)
 }
 
 func (state *endpointSupervisor) spawnEndpointWriter(address string, ctx actor.Context) *actor.PID {
