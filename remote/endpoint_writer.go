@@ -173,13 +173,19 @@ func (state *endpointWriter) Receive(ctx actor.Context) {
 			ctx.Self().Stop()
 		}
 	case *actor.Stopped:
-		state.conn.Close()
+		if state.conn != nil {
+			state.conn.Close()
+		}
 	case *actor.Restarting:
-		state.conn.Close()
+		if state.conn != nil {
+			state.conn.Close()
+		}
 	case *EndpointTerminatedEvent:
 		ctx.Self().Stop()
 	case []interface{}:
-		state.sendEnvelopes(msg, ctx)
+		if state.stream != nil {
+			state.sendEnvelopes(msg, ctx)
+		}
 	case actor.SystemMessage, actor.AutoReceiveMessage:
 		//ignore
 	default:
