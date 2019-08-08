@@ -131,13 +131,13 @@ type supervisorStrategy struct{}
 
 func (strategy *supervisorStrategy) HandleFailure(supervisor actor.Supervisor, child *actor.PID, rs *actor.RestartStatistics, reason interface{}, message interface{}) {
 
-	if memberList == nil {
+	memberList.mutex.RLock()
+	defer memberList.mutex.RUnlock()
+
+	if len(memberList.members) == 0 {
 		supervisor.StopChildren(child)
 		return
 	}
-
-	memberList.mutex.RLock()
-	defer memberList.mutex.RUnlock()
 
 	for _, value := range memberList.members {
 		if value.Address() == child.GetAddress() {
