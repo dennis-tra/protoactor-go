@@ -34,7 +34,7 @@ func startEndpointManager(config *remoteConfig) {
 
 	props := actor.PropsFromProducer(newEndpointSupervisor).
 		WithGuardian(actor.RestartingSupervisorStrategy()).
-		WithSupervisor(actor.RestartingSupervisorStrategy()).
+		WithSupervisor(config.supervisorStrategy).
 		WithDispatcher(mailbox.NewSynchronizedDispatcher(300))
 	endpointSupervisor, _ := rootContext.SpawnNamed(props, "EndpointSupervisor")
 
@@ -151,7 +151,6 @@ func (state *endpointSupervisor) Receive(ctx actor.Context) {
 func (state *endpointSupervisor) spawnEndpointWriter(address string, ctx actor.Context) *actor.PID {
 	props := actor.
 		PropsFromProducer(endpointWriterProducer(address, endpointManager.config)).
-		WithSupervisor(endpointManager.config.supervisorStrategy).
 		WithMailbox(endpointWriterMailboxProducer(endpointManager.config.endpointWriterBatchSize, endpointManager.config.endpointWriterQueueSize))
 	pid := ctx.Spawn(props)
 	return pid
